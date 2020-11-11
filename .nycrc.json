@@ -1,0 +1,11 @@
+{
+  "all": true,
+  "extension": [".js", ".purs"],
+  "include": [
+    "src/**/*.purs",
+    "output/Node.WebAssembly.*/*",
+    "output/Node.WebAssembly/*",
+    "output/Node.WASI/*"
+  ],
+  "reporter": ["html"]
+}
