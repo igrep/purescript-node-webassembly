@@ -1,5 +1,5 @@
 -- | Example application to run a WASI executable.
-module Main where
+module Node.WASI.Example where
 
 import Prelude (Unit, bind, discard, ($), (<<<), (=<<), (<>))
 
