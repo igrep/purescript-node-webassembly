@@ -157,9 +157,9 @@ main = launchAff_ $ runSpec [consoleReporter] do
     describe "new" do
       it "initializes a new instance with various kinds of imports" do
         mod <- compileExampleFile "various-imports.wasm"
-        let tbl = Table.new { initial: 1 }
-            mem = Memory.new { initial: 10 }
-            glbl = Global.new (Global.Mutable false) 2
+        tbl <- liftEffect $ Table.new { initial: 1 }
+        mem <- liftEffect $ Memory.new { initial: 10 }
+        let glbl = Global.new (Global.Mutable false) 2
             imports = Object.singleton "js" $ Object.fromFoldable
               [ Tuple "f00" $ ImportObject.Func0 $ pure fZero
               , Tuple "f01" $ ImportObject.Func1 $ mkEffectFn1 $ \_ -> pure fZero
@@ -203,7 +203,7 @@ main = launchAff_ $ runSpec [consoleReporter] do
   describe "Node.WebAssembly.Memory" do
     describe "new" do
       it "can create readable/writable instance of WebAssembly.Memory" do
-        let mem = Memory.newWithMaximum { initial: 10, maximum: 20 } 
+        mem <- liftEffect $ Memory.newWithMaximum { initial: 10, maximum: 20 } 
         buf <- liftEffect $ Memory.buffer mem
         ints :: Array Int <- liftEffect $ replicateA 10 (randomInt 0 9)
         liftEffect $ forWithIndex_ ints \ix int -> do
@@ -223,7 +223,7 @@ main = launchAff_ $ runSpec [consoleReporter] do
       it "increases the buffer size" do
         let bytesPerPage = 64 * 1024
         initial <- liftEffect $ randomInt 1 5
-        let mem = Memory.new { initial }
+        mem <- liftEffect $ Memory.new { initial }
         sizeBeforeGrow <- liftEffect $ map ArrayBuffer.byteLength $ Memory.buffer mem
         sizeBeforeGrow `shouldEqual` (initial * bytesPerPage)
 
@@ -278,9 +278,8 @@ main = launchAff_ $ runSpec [consoleReporter] do
 
     describe "get" do
       it "all functions not set at first" do
-        let table :: Table Anyfunc
-            table = Table.new { initial: tableSize }
-            shouldReturnNothing :: forall effectFn. TableElem (Table Anyfunc) effectFn => Int -> Proxy effectFn -> Aff Unit
+        table :: Table Anyfunc <- liftEffect $ Table.new { initial: tableSize }
+        let shouldReturnNothing :: forall effectFn. TableElem (Table Anyfunc) effectFn => Int -> Proxy effectFn -> Aff Unit
             shouldReturnNothing i _proxy =
               map (map unWasmValue) (liftEffect $ Table.get i table) `shouldReturnSatisfy` (isNothing :: Maybe effectFn -> Boolean)
 
@@ -297,9 +296,8 @@ main = launchAff_ $ runSpec [consoleReporter] do
         shouldReturnNothing 10 (Proxy :: Proxy (EffectFn10 Int Int Int Int Int Int Int Int Int Int Int))
 
       it "can get functions saved in the table after importing to a wasm module" do
-        let table :: Table Table.Anyfunc
-            table = Table.new { initial: tableSize }
-            imports = Object.singleton "js" $ Object.singleton "tbl" $ ImportObject.TableAnyfunc table
+        table :: Table Anyfunc <- liftEffect $ Table.new { initial: tableSize }
+        let imports = Object.singleton "js" $ Object.singleton "tbl" $ ImportObject.TableAnyfunc table
         exports <- getExportsOfExampleFile "table-imported.wasm" imports
 
         let shouldReturnExportedFunction
@@ -328,9 +326,8 @@ main = launchAff_ $ runSpec [consoleReporter] do
 
     describe "set" do
       it "Can replace functions in the table" do
-        let table :: Table Anyfunc
-            table = Table.new { initial: tableSize }
-            imports = Object.singleton "js" $ Object.singleton "tbl" $ ImportObject.TableAnyfunc table
+        table :: Table Anyfunc <- liftEffect $ Table.new { initial: tableSize }
+        let imports = Object.singleton "js" $ Object.singleton "tbl" $ ImportObject.TableAnyfunc table
         exports <- getExportsOfExampleFile "table-imported.wasm" imports
 
         let shouldReturnReplacedFunctionAfterSet
@@ -381,16 +378,14 @@ main = launchAff_ $ runSpec [consoleReporter] do
 
 
     describe "grow" do
-      it "can increase the length of the table" do
-        liftEffect do
-          initial <- randomInt 1 10
-          let table :: Table Anyfunc
-              table = Table.new { initial }
-          Table.length table `shouldReturn` initial
+      it "can increase the length of the table" $ liftEffect do
+        initial <- randomInt 1 10
+        table :: Table Anyfunc <- Table.new { initial }
+        Table.length table `shouldReturn` initial
 
-          delta <- randomInt 5 15
-          Table.grow delta table `shouldReturn` initial
-          Table.length table `shouldReturn` (initial + delta)
+        delta <- randomInt 5 15
+        Table.grow delta table `shouldReturn` initial
+        Table.length table `shouldReturn` (initial + delta)
 
 
 readExampleFile :: String -> Aff ArrayBuffer

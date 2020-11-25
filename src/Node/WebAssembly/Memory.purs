@@ -13,9 +13,9 @@ import Effect (Effect)
 
 foreign import data Memory :: Type
 
-foreign import new :: { initial :: Int } -> Memory
+foreign import new :: { initial :: Int } -> Effect Memory
 
-foreign import newWithMaximum :: MemoryDescriptor -> Memory
+foreign import newWithMaximum :: MemoryDescriptor -> Effect Memory
 
 foreign import buffer :: Memory -> Effect ArrayBuffer
 

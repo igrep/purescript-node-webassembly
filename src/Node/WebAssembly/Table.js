@@ -1,10 +1,10 @@
 "use strict";
 
-exports.newRaw = desc => new WebAssembly.Table(desc);
+exports.newRaw = desc => () => new WebAssembly.Table(desc);
 
 exports.newWithMaximumRaw = exports.new;
 
-exports.getRaw = nothing => just => i => table => _ => {
+exports.getRaw = nothing => just => i => table => () => {
   const result = table.get(i);
   if (result) {
     return just(result)
@@ -12,10 +12,10 @@ exports.getRaw = nothing => just => i => table => _ => {
   return nothing;
 };
 
-exports.setRaw = i => table => elem => _ => table.set(i, elem);
+exports.setRaw = i => table => elem => () => table.set(i, elem);
 
-exports.grow = delta => table => _ => table.grow(delta);
+exports.grow = delta => table => () => table.grow(delta);
 
-exports.length = table => _ => table.length;
+exports.length = table => () => table.length;
 
 exports.undefined = undefined;

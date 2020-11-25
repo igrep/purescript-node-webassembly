@@ -1,7 +1,7 @@
-exports.new = desc => new WebAssembly.Memory(desc);
+exports.new = desc => () => new WebAssembly.Memory(desc);
 
 exports.newWithMaximum = exports.new;
 
-exports.buffer = mem => _ => mem.buffer;
+exports.buffer = mem => () => mem.buffer;
 
-exports.grow = delta => mem => _ => mem.grow(delta);
+exports.grow = delta => mem => () => mem.grow(delta);

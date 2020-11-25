@@ -47,9 +47,9 @@ foreign import kind TableKind
 foreign import data Anyfunc :: TableKind
 
 
-foreign import newRaw :: forall k. { element :: TableKindRaw, initial :: Int } -> Table k
+foreign import newRaw :: forall k. { element :: TableKindRaw, initial :: Int } -> Effect (Table k)
 
-foreign import newWithMaximumRaw :: forall k. TableDescriptorRaw -> Table k
+foreign import newWithMaximumRaw :: forall k. TableDescriptorRaw -> Effect (Table k)
 
 foreign import grow :: forall k. Int -> Table k -> Effect Int
 
@@ -154,11 +154,11 @@ instance fn10TableElem :: TableElem (Table Anyfunc) (EffectFn10 a b c d e f g h 
   set = setImpl
 
 
-new :: forall k. STableKind (Table k) => { initial :: Int } -> Table k
+new :: forall k. STableKind (Table k) => { initial :: Int } -> Effect (Table k)
 new desc =
   newRaw $ Record.insert (SProxy :: SProxy "element") (asRawTableKind (Proxy :: Proxy (Table k))) desc
 
 
-newWithMaximum :: forall k. STableKind (Table k) => TableDescriptor -> Table k
+newWithMaximum :: forall k. STableKind (Table k) => TableDescriptor -> Effect (Table k)
 newWithMaximum desc =
   newWithMaximumRaw $ Record.insert (SProxy :: SProxy "element") (asRawTableKind (Proxy :: Proxy (Table k))) desc
